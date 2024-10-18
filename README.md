@@ -16,6 +16,8 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 
 </h5>
 
+<div align="center"><img src="assets/bs_memory.png" width="800" /></div>
+
 <details open><summary>💡 Some other multimodal foundation model projects from our team may interest you ✨. </summary><p>
 <!--  may -->
 
@@ -36,9 +38,6 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 [![github](https://img.shields.io/badge/-Github-black?logo=github)](https://github.com/DAMO-NLP-SG/CMM)  [![github](https://img.shields.io/github/stars/DAMO-NLP-SG/CMM.svg?style=social)](https://github.com/DAMO-NLP-SG/CMM)  [![arXiv](https://img.shields.io/badge/Arxiv-2410.12787-b31b1b.svg?logo=arXiv)](https://arxiv.org/abs/2410.12787) <br>
 
 </p></details>
-
-<div align="center"><img src="assets/bs_memory.png" width="800" /></div>
-
 
 ## 📰 News
 * **[2024.10.19]**  Release training, evaluation codes of Inf-CL.
