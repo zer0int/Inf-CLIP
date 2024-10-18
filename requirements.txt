@@ -1,0 +1,17 @@
+--extra-index-url https://download.pytorch.org/whl/cu118
+# basic dependencies
+torch==2.2.0
+torchvision==0.17.0
+numpy==1.24.4
+timm
+# data processing
+webdataset
+pandas
+ftfy
+regex
+braceexpand
+# The newest pillow fix this bug: "UserWarning: image file could not be identified because WEBP support not installed"
+pillow==10.4.0 # Refer to this issue: https://github.com/ContinuumIO/anaconda-issues/issues/10737
+# logging tools
+tensorboard
+tensorboardX

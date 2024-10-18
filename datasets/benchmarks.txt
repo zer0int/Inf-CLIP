@@ -1,0 +1,10 @@
+wds/mscoco_captions
+wds/flickr8k
+wds/flickr30k
+wds/imagenet1k
+wds/imagenetv2
+wds/imagenet_sketch
+wds/imagenet-a
+wds/imagenet-r
+wds/imagenet-o
+wds/objectnet
