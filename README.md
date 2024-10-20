@@ -45,6 +45,13 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 <div align="center"><img src="assets/framework.jpg" width="800" /></div>
 
 
+## ⭐ Features
+* [x] [Gradient Accumulation](https://github.com/DAMO-NLP-SG/Inf-CL/inf_cl_train/train.py#L180)
+* [x] [Gradient Cache](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl_train/train.py#L292)
+* [x] [Ring CL](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl/models/ops/ring.py#L238)
+* [x] [Inf CL](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl/models/ops/ring.py#L251)
+
+
 ## 🛠️ Requirements and Installation
 
 Basic Dependencies:
