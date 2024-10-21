@@ -16,7 +16,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 
 </h5>
 
-<div align="center"><img src="assets/bs_memory.png" width="800" /></div>
+<div align="center"><img src="assets/motivation.jpg" width="800" /></div>
 
 <details open><summary>💡 Some other multimodal foundation model projects from our team may interest you ✨. </summary><p>
 <!--  may -->
@@ -42,7 +42,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 ## 📰 News
 * **[2024.10.19]**  Release training, evaluation codes of Inf-CLIP.
 
-<div align="center"><img src="assets/framework.jpg" width="800" /></div>
+<div align="center"><img src="assets/bs_memory.png" width="800" /></div>
 
 
 ## ⭐ Features
