@@ -9,10 +9,10 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 <h5 align="center">
 
 [![arXiv](https://img.shields.io/badge/Arxiv-2406.07476-AD1C18.svg?logo=arXiv)](https://arxiv.org/abs/2406.07476)
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/LICENSE) 
-[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FDAMO-NLP-SG%2FInf-CL&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
-[![GitHub issues](https://img.shields.io/github/issues/DAMO-NLP-SG/Inf-CL?color=critical&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CL/issues?q=is%3Aopen+is%3Aissue)
-[![GitHub closed issues](https://img.shields.io/github/issues-closed/DAMO-NLP-SG/Inf-CL?color=success&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CL/issues?q=is%3Aissue+is%3Aclosed)  <br>
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/LICENSE) 
+[![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FDAMO-NLP-SG%2FInf-CLIP&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
+[![GitHub issues](https://img.shields.io/github/issues/DAMO-NLP-SG/Inf-CLIP?color=critical&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aopen+is%3Aissue)
+[![GitHub closed issues](https://img.shields.io/github/issues-closed/DAMO-NLP-SG/Inf-CLIP?color=success&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aissue+is%3Aclosed)  <br>
 
 </h5>
 
@@ -40,16 +40,16 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 </p></details>
 
 ## 📰 News
-* **[2024.10.19]**  Release training, evaluation codes of Inf-CL.
+* **[2024.10.19]**  Release training, evaluation codes of Inf-CLIP.
 
 <div align="center"><img src="assets/framework.jpg" width="800" /></div>
 
 
 ## ⭐ Features
-* [x] [Gradient Accumulation (inf_cl_train/train.py#L180)](https://github.com/DAMO-NLP-SG/Inf-CL/inf_cl_train/train.py#L180)
-* [x] [Gradient Cache (inf_cl_train/train.py#L292)](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl_train/train.py#L292)
-* [x] [Ring-CL (inf_cl/models/ops/ring.py#L238)](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl/models/ops/ring.py#L238)
-* [x] [Inf-CL (inf_cl/models/ops/ring.py#L251)](https://github.com/DAMO-NLP-SG/Inf-CL/blob/main/inf_cl/models/ops/ring.py#L251)
+* [x] [Gradient Accumulation (inf_clip_train/train.py#L180)](https://github.com/DAMO-NLP-SG/Inf-CLIP/inf_clip_train/train.py#L180)
+* [x] [Gradient Cache (inf_clip_train/train.py#L292)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip_train/train.py#L292)
+* [x] [Ring-CL (inf_clip/models/ops/ring.py#L238)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L238)
+* [x] [Inf-CL (inf_clip/models/ops/ring.py#L251)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L251)
 
 
 ## 🛠️ Requirements and Installation
@@ -61,8 +61,8 @@ Basic Dependencies:
 
 Install required packages:
 ```bash
-git clone https://github.com/DAMO-NLP-SG/Inf-CL
-cd Inf-CL
+git clone https://github.com/DAMO-NLP-SG/Inf-CLIP
+cd Inf-CLIP
 pip install -r requirements.txt
 ```
 
@@ -84,11 +84,11 @@ pip install -r requirements.txt
 
 ### Quick Start
 
-To facilitate further development on top of our codebase, we provide a quick-start guide on how to use Inf-CL to train a customized CLIP and evaluate the trained model on the mainstream clip benchmarks.
+To facilitate further development on top of our codebase, we provide a quick-start guide on how to use Inf-CLIP to train a customized CLIP and evaluate the trained model on the mainstream clip benchmarks.
 
 1. Training Data Structure:
 ```bash
-Inf-CL
+Inf-CLIP
 ├── datasets
 │   ├── cc3m/ # https://github.com/rom1504/img2dataset/blob/main/dataset_examples/cc3m.md
 |   |   ├── 0000.tar
@@ -114,7 +114,7 @@ bash scripts/laion400m/lit_vit-b-32_bs256k.sh
 ```
 3. Evaluation Data Structure:
 ```bash
-Inf-CL
+Inf-CLIP
 ├── datasets
 │   ├── imagenet-1k/
 |   |   └── val/
@@ -144,7 +144,7 @@ bash scripts/benchmarks_eval.sh
 
 ## 📑 Citation
 
-If you find Inf-CL useful for your research and applications, please cite using this BibTeX:
+If you find Inf-CLIP useful for your research and applications, please cite using this BibTeX:
 ```bibtex
 @article{damonlpsg2024infcl,
   title={Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Loss},
@@ -156,7 +156,7 @@ If you find Inf-CL useful for your research and applications, please cite using 
 ```
 
 ## 👍 Acknowledgement
-The codebase of Inf-CL is adapted from [**OpenCLIP**](https://github.com/mlfoundations/open_clip). We are also grateful for the following projects our Inf-CL arise from:
+The codebase of Inf-CLIP is adapted from [**OpenCLIP**](https://github.com/mlfoundations/open_clip). We are also grateful for the following projects our Inf-CL arise from:
 * [**OpenAI CLIP**](https://openai.com/index/clip/), [**img2dataset**](https://github.com/rom1504/img2dataset), [**CLIP-Benchmark**](https://github.com/LAION-AI/CLIP_benchmark).
 * [**FlashAttention**](https://github.com/Dao-AILab/flash-attention), [**RingAttention**](https://github.com/haoliuhl/ringattention), [**RingFlashAttention**](https://github.com/zhuzilin/ring-flash-attention). 
 
