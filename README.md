@@ -1,5 +1,5 @@
 <p align="center">
-    <img src="assets/logo.png" width="150" style="margin-bottom: 0.2;"/>
+    <img src="https://github.com/user-attachments/assets/53a09bd1-c8ac-43c0-80ae-03ba284c94ad" width="150" style="margin-bottom: 0.2;"/>
 <p>
 
 <h3 align="center"><a href="https://arxiv.org/abs/2406.07476">
@@ -16,7 +16,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 
 </h5>
 
-<div align="center"><img src="assets/motivation.jpg" width="800" /></div>
+<div align="center"><img src="https://github.com/user-attachments/assets/2c19838b-43d8-4145-b28c-903f3d76f8ab" width="800" /></div>
 
 <details open><summary>💡 Some other multimodal foundation model projects from our team may interest you ✨. </summary><p>
 <!--  may -->
@@ -42,7 +42,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 ## 📰 News
 * **[2024.10.19]**  Release training, evaluation codes of Inf-CLIP.
 
-<div align="center"><img src="assets/bs_memory.png" width="800" /></div>
+<div align="center"><img src="https://github.com/user-attachments/assets/11c5cc32-aac2-497d-bbc1-33e065a71be0" width="800" /></div>
 
 
 ## ⭐ Features
