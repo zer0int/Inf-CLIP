@@ -41,13 +41,13 @@ torchrun --nnodes $WORLD_SIZE \
     --master_addr=$MASTER_ADDR \
     --master_port=$MASTER_PORT \
     --node_rank $RANK \
-    -m open_clip_train.main \
+    -m inf_clip.train.main \
     --model LiT-L-16 \
-    --train-data ${DATA_DIR}'/IMAGE/laion400m/tars/{00000..41407}.tar' \
+    --train-data ${DATA_DIR}'/laion400m/{00000..41407}.tar' \
     --train-num-samples $TRAIN_NUM_SAMPLES \
     --aug-cfg scale='(0.08, 1.0)'\
     --dataset-type webdataset \
-    --imagenet-val ${DATA_DIR}/IMAGE/imagenet-1k/val \
+    --imagenet-val ${DATA_DIR}/imagenet-1k/val \
     --epochs $EPOCHS \
     --warmup $WARMUP_STEPS \
     --batch-size $LOCAL_BATCH_SIZE \
@@ -61,7 +61,7 @@ torchrun --nnodes $WORLD_SIZE \
     --grad-clip-norm 1.0 \
     --workers 16 \
     --precision amp \
-    --ringflashloss \
+    --infloss \
     --log-every-n-steps 1 \
     --logs $OUTP_DIR/$WANDB_PROJECT \
     --name $RUN_NAME \

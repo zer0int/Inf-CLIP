@@ -1,0 +1,47 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "inf-cl"
+version = "1.0"
+authors = [
+    {name = "Zesen Cheng", email = "cyanlaser@stu.pku.edu.cn"},
+    {name = "Hang Zhang"},
+    {name = "Kehan Li"},
+    {name = "Xin Li"},
+]
+description = "A highly memory-efficient contrastive loss."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+classifiers = [
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Education',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: MIT License',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
+        'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
+        'Topic :: Scientific/Engineering',
+        'Topic :: Scientific/Engineering :: Artificial Intelligence',
+        'Topic :: Software Development',
+        'Topic :: Software Development :: Libraries',
+        'Topic :: Software Development :: Libraries :: Python Modules',
+]
+dependencies = [
+    'torch>=2.0.0',
+    'numpy',
+    'triton>=2.2.0',
+]
+
+[project.urls]
+Homepage = "https://github.com/clownrat6/Inf-CLIP/inf_cl"
+Issues = "https://github.com/clownrat6/Inf-CLIP/issues"
+
+[tool.pdm.build]
+excludes = ["./**/.git", "./**/logs/*", "./**/work_dirs"]
+package-dir = "."
+includes = ["./inf_cl"]

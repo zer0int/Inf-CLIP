@@ -1,3 +1,4 @@
+import os
 import math
 import random
 
@@ -150,7 +151,7 @@ class RingProb(torch.autograd.Function):
         return dq, next_dk, None
     
 
-class RingFlashProb(torch.autograd.Function):
+class InfProb(torch.autograd.Function):
 
     @staticmethod
     def forward(ctx, q, k, group):
@@ -248,104 +249,111 @@ def _cal_ring_loss(q, k, labels, head_dim=256):
     return loss
 
 
-def _cal_ring_flash_loss(q, k, labels, head_dim=256):
+def _cal_inf_loss(q, k, labels, head_dim=256):
     bq = q.shape[0]
     bk = k.shape[0]
     q = q.view(bq, -1, head_dim).float()
     k = k.view(bk, -1, head_dim).float()
 
-    lse = RingFlashProb.apply(q, k, None)
+    lse = InfProb.apply(q, k, None)
     numerator = torch.einsum("mhd,mhd->m", q, k[labels, ...])
     loss = -numerator + lse
 
     return loss
 
 
+def cal_ring_loss(q, k, labels=None, scale=None, head_dim=256):
+    """The triton implementation of the ring-cl.
+
+    Args:
+        q (torch.Tensor): The column tensor in contrastive loss. The shape is [B, D].
+        k (torch.Tensor): The row tensor in contrastive loss. The shape is [B, D].
+        labels (torch.Tensor, optional): In CLIP loss, the labels are the indices of the positive pairs. The shape is [B]. When setting to None, the labels are the range of [0, B). Defaults to None.
+        scale (torch.Tensor, optional): The scale tensor of the query tensor. Defaults to None.
+        head_dim (int, optional): The head dimension. (must be 16, 32, 64, 128 or 256). Defaults to 256.
+
+    """
+
+    if labels is None:
+        labels = torch.arange(q.shape[0]).to(q.device)
+    if scale is None:
+        scale = 1.0
+    else:
+        scale = GradientGather.apply(scale)
+    return _cal_ring_loss(scale * q, k, labels, head_dim).mean()
+
+
+def cal_inf_loss(q, k, labels=None, scale=None, head_dim=256):
+    """The triton implementation of the inf-cl.
+
+    Args:
+        q (torch.Tensor): The column tensor in contrastive loss. The shape is [B, D].
+        k (torch.Tensor): The row tensor in contrastive loss. The shape is [B, D].
+        labels (torch.Tensor, optional): In CLIP loss, the labels are the indices of the positive pairs. The shape is [B]. When setting to None, the labels are the range of [0, B). Defaults to None.
+        scale (torch.Tensor, optional): The scale tensor of the query tensor. Defaults to None.
+        head_dim (int, optional): The head dimension. (must be 16, 32, 64, 128 or 256). Defaults to 256.
+
+    """
+
+    if labels is None:
+        labels = torch.arange(q.shape[0]).to(q.device)
+    if scale is None:
+        scale = 1.0
+    else:
+        scale = GradientGather.apply(scale)
+    return _cal_inf_loss(scale * q, k, labels, head_dim).mean()
+
+
 if __name__ == "__main__":
+    import time
+
     dist.init_process_group("nccl")
 
     rank = dist.get_rank()
     world_size = dist.get_world_size()
-    # device = torch.device(f"cuda:{rank}")
 
-    set_seed(rank)
-    torch.cuda.set_device(rank)
-
-    print(rank, world_size)
-    import time
+    torch.cuda.set_device(f'cuda:{os.environ["LOCAL_RANK"]}')
 
     # Parameters
     dtype = torch.float32
-    num_heads = 3   # Number of attention heads
+    num_heads = 3        # Number of attention heads
     seq_length_q = 32768 # Sequence length
     seq_length_k = 32768
-    d_model = 256    # Dimension of each head (must be 16, 32, 64, or 128)
-
-    l = torch.ones([], dtype=dtype, device="cuda") * np.log(1 / 0.07)
+    d_model = 256        # Dimension of each head (must be 16, 32, 64, or 128)
 
     # Randomly initialize inputs
-    q = torch.rand((seq_length_q, num_heads * d_model), dtype=dtype, device=f"cuda") # Query
-    k = torch.rand((seq_length_k, num_heads * d_model), dtype=dtype, device=f"cuda") # Key
+    q = torch.rand((seq_length_q // world_size, num_heads * d_model), dtype=dtype, device=f"cuda")
+    k = torch.rand((seq_length_k // world_size, num_heads * d_model), dtype=dtype, device=f"cuda")
+    l = torch.ones([], dtype=dtype, device="cuda") * np.log(1 / 0.07); l = l.requires_grad_() # Logit scale
 
-    q = F.normalize(q, p=2, dim=-1)
-    k = F.normalize(k, p=2, dim=-1)
+    q = F.normalize(q, p=2, dim=-1).requires_grad_() # Query
+    k = F.normalize(k, p=2, dim=-1).requires_grad_() # Key
 
-    q.requires_grad = True
-    k.requires_grad = True
-    l.requires_grad = True
-
-    dist.broadcast(q, src=0)
-    dist.broadcast(k, src=0)
-    dist.broadcast(l, src=0)
-
-    q_chunk_size  = math.ceil(seq_length_q / world_size)
-    k_chunk_size  = math.ceil(seq_length_k / world_size)
-
-    q = q.view(seq_length_q, num_heads, d_model).contiguous()
-    k = k.view(seq_length_k, num_heads, d_model).contiguous()
-
-    labels = torch.arange(seq_length_q).to(q.device)
-
-    local_q = q.chunk(world_size, dim=0)[rank].detach().clone()
-    local_k = k.chunk(world_size, dim=0)[rank].detach().clone()
-    local_l = l.detach().clone()
-
-    local_q.requires_grad = True
-    local_k.requires_grad = True
-    local_l.requires_grad = True
-
-    local_q1 = q.chunk(world_size, dim=0)[rank].detach().clone()
-    local_k1 = k.chunk(world_size, dim=0)[rank].detach().clone()
-    local_l1 = l.detach().clone()
-
-    local_q1.requires_grad = True
-    local_k1.requires_grad = True
-    local_l1.requires_grad = True
-
-    local_labels = torch.arange(rank * q_chunk_size, (rank + 1) * q_chunk_size).to(q.device)
-    local_labels = local_labels[local_labels < seq_length_q]
-    # valid 
-    # local_labels = local_labels[local_labels > rank * k_chunk_size]
-    local_labels = local_labels - rank * k_chunk_size
-    local_labels = local_labels[local_labels >= 0]
+    q1 = q.clone().detach().requires_grad_()
+    k1 = k.clone().detach().requires_grad_()
+    l1 = l.clone().detach().requires_grad_()
 
     for i in range(1000):
-        # B. local torch gradient
+        # A. local torch gradient
         start = time.time()
-        gathered_q = [torch.zeros_like(local_q) for _ in range(world_size)]
-        gathered_k = [torch.zeros_like(local_k) for _ in range(world_size)]
-        dist.all_gather(gathered_q, local_q)
-        dist.all_gather(gathered_k, local_k)
-        gathered_q[rank] = local_q
-        gathered_k[rank] = local_k
+        # A.1. gather q, k
+        gathered_q = [torch.zeros_like(q) for _ in range(world_size)]
+        gathered_k = [torch.zeros_like(k) for _ in range(world_size)]
+        dist.all_gather(gathered_q, q)
+        dist.all_gather(gathered_k, k)
+        gathered_q[rank] = q
+        gathered_k[rank] = k
         all_q = torch.cat(gathered_q, dim=0)
         all_k = torch.cat(gathered_k, dim=0)
-        # 1. calculating qk logits
-        qk = torch.einsum("mhd,nhd->mn", local_l.exp() * all_q, all_k)
+        # A.2. calculating qk logits
+        qk = torch.einsum("md,nd->mn", l.exp() * all_q, all_k)
         kq = qk.T
-        loss_i2t = F.cross_entropy(qk, labels, reduction="mean")
-        loss_t2i = F.cross_entropy(kq, labels, reduction="mean")
-        scale_factor = (all_q.shape[0] / local_q.shape[0])
+        _labels = torch.arange(seq_length_q).to(q.device)
+        # A.3. calculating loss
+        loss_i2t = F.cross_entropy(qk, _labels, reduction="mean")
+        loss_t2i = F.cross_entropy(kq, _labels, reduction="mean")
+        # A.4. scaling loss to normal value
+        scale_factor = (all_q.shape[0] / q.shape[0])
         loss = (loss_i2t + loss_t2i) * 0.5 * scale_factor
         loss.backward()
         show_loss = loss.detach().clone()
@@ -354,24 +362,21 @@ if __name__ == "__main__":
         end = time.time()
 
         dist.barrier()
-        # B. triton
+
+        # B. triton implementation
         start1 = time.time()
-        local_l1g = GradientGather.apply(local_l1)
-        loss1_i2t = _cal_ring_loss(local_l1g.exp() * local_q1, local_k1, local_labels, head_dim=256)
-        loss1_t2i = _cal_ring_loss(local_l1g.exp() * local_k1, local_q1, local_labels, head_dim=256)
+        # labels = torch.arange(seq_length_q // world_size).to(q.device)
+        loss1_i2t = cal_inf_loss(q1, k1, scale=l1.exp())
+        loss1_t2i = cal_inf_loss(k1, q1, scale=l1.exp())
         loss1 = (loss1_i2t + loss1_t2i).mean() * 0.5
         loss1.backward()
         end1 = time.time()
 
-        if rank == 0:
-            print(loss, show_loss, loss1)
-            print(rank, end - start, end1 - start1, local_l.grad, local_l1.grad, torch.max(torch.abs(local_q.grad - local_q1.grad)), torch.max(torch.abs(local_k.grad - local_k1.grad)))
-
         dist.barrier()
 
-        local_q.grad = None
-        local_k.grad = None
-        local_l.grad = None
-        local_q1.grad = None
-        local_k1.grad = None
-        local_l1.grad = None
+        if rank == 0:
+            print(rank, end - start, end1 - start1, loss, show_loss, loss1)
+            print(l.grad, l1.grad, torch.max(torch.abs(q.grad - q1.grad)), torch.max(torch.abs(k.grad - k1.grad)))
+
+        q.grad = None; k.grad = None; l.grad = None
+        q1.grad = None; k1.grad = None; l1.grad = None

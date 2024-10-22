@@ -40,35 +40,9 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 </p></details>
 
 ## 📰 News
-* **[2024.10.19]**  Release training, evaluation codes of Inf-CLIP.
+* **[2024.10.18]**  Release training, evaluation codes of Inf-CLIP.
 
 <div align="center"><img src="https://github.com/user-attachments/assets/11c5cc32-aac2-497d-bbc1-33e065a71be0" width="800" /></div>
-
-
-## ⭐ Features
-
-`inf_cl` is the triton implementation of Inf-CL loss:
-* [x] [Ring-CL (inf_cl/ring.py#L238)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L238)
-* [x] [Inf-CL  (inf_cl/ring.py#L251)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L251)
-
-`inf_clip`/`inf_clip_train` are the CLIP training codebase with Inf-CL loss, which has these features:
-- [x] [Gradient Accumulation (inf_clip_train/train.py#L180)](https://github.com/DAMO-NLP-SG/Inf-CLIP/inf_clip_train/train.py#L180)
-- [x] [Gradient Cache (inf_clip_train/train.py#L292)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip_train/train.py#L292)
-
-
-## 🛠️ Requirements and Installation
-
-Basic Dependencies:
-* Python >= 3.8
-* Pytorch >= 2.2.0
-* CUDA Version >= 11.8
-
-Install required packages:
-```bash
-git clone https://github.com/DAMO-NLP-SG/Inf-CLIP
-cd Inf-CLIP
-pip install -r requirements.txt
-```
 
 ## 🔑 Usage
 
@@ -77,6 +51,8 @@ A simple example about how to adopt our Inf-CL loss for contrastive learning.
 ```python
 import torch
 import torch.distributed as dist
+
+from inf_cl import cal_inf_loss
 
 
 def create_cl_tensors(rank, world_size):
@@ -116,85 +92,9 @@ if __name__ == "__main__":
 ```
 
 
-## 🚀 Main Results
-
-### Memory Cost
-<p><img src="assets/memory_cost.jpg" width="800" "/></p>
-
-### Max Supported Batch Size
-<p><img src="assets/max_batch_size.jpg" width="800" "/></p>
-
-### Speed
-<p><img src="assets/speed.jpg" width="800" "/></p>
-
-### Batch Size Scaling
-<p><img src="assets/batch_size_scaling.jpg" width="800" "/></p>
-
-## 🗝️ Training & Evaluation
-
-### Quick Start
-
-To facilitate further development on top of our codebase, we provide a quick-start guide on how to use Inf-CLIP to train a customized CLIP and evaluate the trained model on the mainstream clip benchmarks.
-
-1. Training Data Structure:
-```bash
-Inf-CLIP
-├── datasets
-│   ├── cc3m/ # https://github.com/rom1504/img2dataset/blob/main/dataset_examples/cc3m.md
-|   |   ├── 0000.tar
-|   |   ├── 0001.tar
-|   |   ├── ...
-|   |   └── 0301.tar
-│   ├── cc12m/ # https://github.com/rom1504/img2dataset/blob/main/dataset_examples/cc12m.md
-|   |   ├── 0000.tar
-|   |   ├── 0001.tar
-|   |   ├── ...
-|   |   └── 1044.tar
-│   ├── laion400m/ # https://github.com/rom1504/img2dataset/blob/main/dataset_examples/laion400m.md
-|   |   ├── 00000.tar
-|   |   ├── 00001.tar
-|   |   ├── ...
-|   |   └── 41407.tar
-```
-2. Command:
-```bash
-bash scripts/cc3m/lit_vit-b-32_bs16k.sh
-bash scripts/cc12m/lit_vit-b-32_bs32k.sh
-bash scripts/laion400m/lit_vit-b-32_bs256k.sh
-```
-3. Evaluation Data Structure:
-```bash
-Inf-CLIP
-├── datasets
-│   ├── imagenet-1k/
-|   |   └── val/
-|   |   |   ├── n01440764
-|   |   |   ├── n01443537
-|   |   |   ├── ...
-|   |   |   └── n15075141
-│   ├── clip-benchmark/
-|   |   ├── wds_mscoco_captions
-|   |   ├── wds_flickr8k
-|   |   ├── wds_flickr30k
-|   |   ├── wds_imagenet1k
-|   |   ├── wds_imagenetv2
-|   |   ├── wds_imagenet_sketch
-|   |   ├── wds_imagenet-a
-|   |   ├── wds_imagenet-r
-|   |   ├── wds_imagenet-o
-|   |   └── wds_objectnet
-```
-4. Command:
-```bash
-# imagenet evaluation
-bash scripts/imagenet_eval.sh
-# overall evaluation
-bash scripts/benchmarks_eval.sh
-```
-
 ## 📑 Citation
 
-If you find Inf-CLIP useful for your research and applications, please cite using this BibTeX:
+If you find Inf-CL useful for your research and applications, please cite using this BibTeX:
 ```bibtex
 @article{damonlpsg2024infcl,
   title={Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Loss},
@@ -204,11 +104,6 @@ If you find Inf-CLIP useful for your research and applications, please cite usin
   url = {https://arxiv.org/abs/}
 }
 ```
-
-## 👍 Acknowledgement
-The codebase of Inf-CLIP is adapted from [**OpenCLIP**](https://github.com/mlfoundations/open_clip). We are also grateful for the following projects our Inf-CL arise from:
-* [**OpenAI CLIP**](https://openai.com/index/clip/), [**img2dataset**](https://github.com/rom1504/img2dataset), [**CLIP-Benchmark**](https://github.com/LAION-AI/CLIP_benchmark).
-* [**FlashAttention**](https://github.com/Dao-AILab/flash-attention), [**RingAttention**](https://github.com/haoliuhl/ringattention), [**RingFlashAttention**](https://github.com/zhuzilin/ring-flash-attention). 
 
 
 ## 🔒 License

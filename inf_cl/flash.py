@@ -334,27 +334,31 @@ def _cal_flash_loss(q, k, labels, head_dim=256):
     return loss
 
 
+def cal_flash_loss(q, k, labels=None, scale=None, head_dim=256):
+    if labels is None:
+        labels = torch.arange(q.shape[0], device=q.device)
+    if scale is None:
+        scale = 1.0
+    return _cal_flash_loss(scale * q, k, labels, head_dim)
+
+
 if __name__ == '__main__':
+    import time
+
     # Parameters
-    num_heads = 2   # Number of attention heads
+    num_heads = 3        # Number of attention heads
     seq_length_q = 32768 # Sequence length
     seq_length_k = 32768
-    d_model = 256    # Dimension of each head (must be 16, 32, 64, or 128)
-
-    import time
+    d_model = 256        # Dimension of each head (must be 16, 32, 64, or 128)
 
     # Randomly initialize inputs
     q = torch.rand((seq_length_q, num_heads * d_model), dtype=torch.float32, device="cuda") # Query
     k = torch.rand((seq_length_k, num_heads * d_model), dtype=torch.float32, device="cuda") # Key
-    l = torch.ones([], device="cuda") * np.log(1 / 0.02)
+    l = torch.ones([], device="cuda") * np.log(1 / 0.02); l.requires_grad = True
 
-    q = F.normalize(q, p=2, dim=-1)
-    k = F.normalize(k, p=2, dim=-1)
+    q = F.normalize(q, p=2, dim=-1); q.requires_grad = True
+    k = F.normalize(k, p=2, dim=-1); k.requires_grad = True
 
-    q.requires_grad = True
-    k.requires_grad = True
-    l.requires_grad = True
-    
     q1 = q.clone().detach().requires_grad_(True)
     k1 = k.clone().detach().requires_grad_(True)
     l1 = l.clone().detach().requires_grad_(True)
@@ -370,50 +374,16 @@ if __name__ == '__main__':
         loss.backward()
         end = time.time()
 
-        # qk_grad = torch.exp(qk - lse[:, None])
-        # qk_grad[torch.arange(len(labels)), labels] -= 1
-
-        # q_grad = torch.einsum("mn,nhd->mhd", qk_grad, _k)
-        # k_grad = torch.einsum("nm,mhd->nhd", qk_grad.T, _q)
-        # l_grad = q_grad.sum()
-        # # print(qk_grad)
-
-        # print("========= Torch Gradient =========")
-        # print(end - start, loss)
-
-        # logit_scale_grad = torch.einsum("mn,mhd->qk_grad
-        # print(torch.sum(nq.grad * nq))
-        # print(nq.grad[:2, 0, :2])
-        # print(q_grad, _q.grad)
-        # print(logit_scale.grad)
-        # print(lse[:2])
-        # print(logit_scale.grad)
-        # print(_q.grad[:5, :, :5], _k.grad[:5, :, :5])
-
-        # C. triton gradient
+        # B. triton gradient
         start1 = time.time()
-        loss1 = _cal_flash_loss(l1.exp() * q1, k1, labels)
+        loss1 = cal_flash_loss(q1, k1, labels, l1.exp())
         loss1 = loss1.mean()
         loss1.backward()
         end1 = time.time()
 
-        # print("========= Triton Gradient =========")
-        # print(end - start, loss)
-        # print(lse[:2])
-        # print(lq.grad[:2, 0, :2] * logit_scale.exp(), q.grad[:2, 0, :2])
-        # exit(0)
-        # print(logit_scale.grad, torch.exp(torch.log(nq.grad) + torch.log(lq)).sum())
-        # print(q.grad[:5, :, :5], k.grad[:5, :, :5])
-
         print("========= Difference =========")
-        # print(torch_time, triton_time, torch.max(torch.abs(q.grad - q_grad)), torch.max(torch.abs(k.grad - k_grad)))
-        print(end - start, end1 - start1, l.grad, l1.grad, torch.max(torch.abs(q.grad - q1.grad)), torch.max(torch.abs(k.grad - k1.grad)))
+        print(end - start, end1 - start1, l.grad, l1.grad)
+        print(torch.max(torch.abs(q.grad - q1.grad)), torch.max(torch.abs(k.grad - k1.grad)))
 
-        q.grad = None
-        k.grad = None
-        l.grad = None
-        q1.grad = None
-        k1.grad = None
-        l1.grad = None
-
-        # exit(0)
+        q.grad = None; k.grad = None; l.grad = None
+        q1.grad = None; k1.grad = None; l1.grad = None

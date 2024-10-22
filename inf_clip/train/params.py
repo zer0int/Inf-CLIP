@@ -470,7 +470,7 @@ def parse_args(args):
         help='Use ring loss.'
     )
     parser.add_argument(
-        "--ringflashloss",
+        "--infloss",
         default=False,
         action="store_true",
         help='Use ring flash loss.'

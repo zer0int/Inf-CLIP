@@ -21,7 +21,7 @@ from .models.clip_arch import CLIP, CustomTextCLIP, convert_weights_to_lp, conve
     resize_pos_embed, get_cast_dtype, resize_text_pos_embed, set_model_preprocess_cfg
 from .models.coca_arch import CoCa
 from .models.lit_arch import LiT
-from .models.loss import ClipLoss, DistillClipLoss, CoCaLoss, SigLipLoss, FlashClipLoss, RingClipLoss, RingFlashClipLoss, DiscoClipLoss
+from .models.loss import ClipLoss, DistillClipLoss, CoCaLoss, SigLipLoss, FlashClipLoss, RingClipLoss, InfClipLoss, DiscoClipLoss
 
 
 HF_HUB_PREFIX = 'hf-hub:'
@@ -385,8 +385,8 @@ def create_loss(args):
             world_size=args.world_size,
             use_horovod=args.horovod
         )
-    elif args.ringflashloss:
-        return RingFlashClipLoss(
+    elif args.infloss:
+        return InfClipLoss(
             rank=args.rank,
             world_size=args.world_size,
             use_horovod=args.horovod

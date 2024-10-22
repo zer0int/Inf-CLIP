@@ -41,7 +41,7 @@ torchrun --nnodes $WORLD_SIZE \
     --master_addr=$MASTER_ADDR \
     --master_port=$MASTER_PORT \
     --node_rank $RANK \
-    -m open_clip_train.main \
+    -m inf_clip.train.main \
     --model LiT-B-32 \
     --train-data ${DATA_DIR}'/cc12m/{0000..1044}.tar' \
     --train-num-samples $TRAIN_NUM_SAMPLES \
@@ -61,7 +61,7 @@ torchrun --nnodes $WORLD_SIZE \
     --grad-clip-norm 1.0 \
     --workers 16 \
     --precision amp \
-    --ringflashloss \
+    --infloss \
     --log-every-n-steps 1 \
     --logs $OUTP_DIR/$WANDB_PROJECT \
     --name $RUN_NAME \
