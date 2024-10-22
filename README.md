@@ -166,13 +166,13 @@ bash scripts/laion400m/lit_vit-b-32_bs256k.sh
 ```bash
 Inf-CLIP
 ├── datasets
-│   ├── imagenet-1k/
+│   ├── imagenet-1k/ # download val_images.tar.gz of imagenet
 |   |   └── val/
 |   |   |   ├── n01440764
 |   |   |   ├── n01443537
 |   |   |   ├── ...
 |   |   |   └── n15075141
-│   ├── clip-benchmark/
+│   ├── clip-benchmark/ # bash datasets/benchmarks_download.sh
 |   |   ├── wds_mscoco_captions
 |   |   ├── wds_flickr8k
 |   |   ├── wds_flickr30k
