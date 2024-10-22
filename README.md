@@ -82,7 +82,10 @@ pip install -r requirements.txt
 
 ## 🔑 Usage
 
-A simple example about how to adopt our Inf-CL loss for contrastive learning.
+A simple example about how to adopt our Inf-CL loss for contrastive learning. Using such command for attempting:
+```
+torchrun --nproc_per_node 2 tests/example.py
+```
 
 ```python
 import torch
