@@ -40,7 +40,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 </p></details>
 
 ## 📰 News
-* **[2024.10.19]**  Release training, evaluation codes of Inf-CLIP.
+* **[2024.10.18]**  Release training, evaluation codes of Inf-CLIP.
 
 <div align="center"><img src="https://github.com/user-attachments/assets/11c5cc32-aac2-497d-bbc1-33e065a71be0" width="800" /></div>
 
@@ -51,19 +51,22 @@ Basic Dependencies:
 * Pytorch >= 2.0.0
 * CUDA Version >= 11.8
 
+[Remote] Install Inf-CL:
+```bash
+# remote installing
+pip install inf_cl
+```
+
+[Local] Install Inf-CL:
+```bash
+pip install -e .
+```
+
 Install required packages:
 ```bash
 git clone https://github.com/DAMO-NLP-SG/Inf-CLIP
 cd Inf-CLIP
 pip install -r requirements.txt
-```
-
-Install Inf-CL:
-```bash
-# local installing
-pip install -e .
-# remote installing
-pip install inf_cl
 ```
 
 ## ⭐ Features
