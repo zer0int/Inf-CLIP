@@ -41,7 +41,7 @@ torchrun --nnodes $WORLD_SIZE \
     --master_addr=$MASTER_ADDR \
     --master_port=$MASTER_PORT \
     --node_rank $RANK \
-    -m open_clip_train.main \
+    -m inf_clip.train.main \
     --model RN50 \
     --train-data ${DATA_DIR}'/cc3m/{0000..0301}.tar' \
     --train-num-samples $TRAIN_NUM_SAMPLES \
@@ -59,7 +59,7 @@ torchrun --nnodes $WORLD_SIZE \
     --wd 0.5 \
     --workers 16 \
     --precision amp \
-    --ringflashloss \
+    --infloss \
     --log-every-n-steps 5 \
     --logs $OUTP_DIR/$WANDB_PROJECT \
     --name $RUN_NAME \

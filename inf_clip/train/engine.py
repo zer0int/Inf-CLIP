@@ -15,9 +15,9 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 from tqdm import tqdm
 
 from .utils import get_autocast, is_master
-from inf_cl import get_input_dtype, get_tokenizer, build_zero_shot_classifier, \
+from inf_clip import get_input_dtype, get_tokenizer, build_zero_shot_classifier, \
     IMAGENET_CLASSNAMES, OPENAI_IMAGENET_TEMPLATES, CLIP, CustomTextCLIP
-from inf_cl.models.loss import ClipLoss
+from inf_clip.models.loss import ClipLoss
 
 try:
     import wandb

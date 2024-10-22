@@ -15,8 +15,7 @@ try:
 except ImportError:
     hvd = None
 
-from .ops.flash import _cal_flash_loss
-from .ops.ring  import _cal_ring_loss, _cal_ring_flash_loss, GradientGather
+from inf_cl import cal_flash_loss, cal_ring_loss, cal_inf_loss
 
 
 def gather_features(
@@ -278,9 +277,8 @@ class RingClipLoss(nn.Module):
             labels = torch.arange(q.shape[0], device=device, dtype=torch.long)
             self.labels[device] = labels
 
-        l = GradientGather.apply(l)
-        i2t_loss = _cal_ring_loss(l * q, k, labels)
-        t2i_loss = _cal_ring_loss(l * k, q, labels)
+        i2t_loss = cal_ring_loss(q, k, labels, l)
+        t2i_loss = cal_ring_loss(k, q, labels, l)
 
         total_loss = (i2t_loss + t2i_loss) / 2
         total_loss = total_loss.mean()
@@ -290,7 +288,7 @@ class RingClipLoss(nn.Module):
         return {"contrastive_loss": total_loss, "show_loss": show_loss}
 
 
-class RingFlashClipLoss(nn.Module):
+class InfClipLoss(nn.Module):
 
     def __init__(
             self,
@@ -319,9 +317,8 @@ class RingFlashClipLoss(nn.Module):
             labels = torch.arange(q.shape[0], device=device, dtype=torch.long)
             self.labels[device] = labels
 
-        l = GradientGather.apply(l)
-        i2t_loss = _cal_ring_flash_loss(l * q, k, labels)
-        t2i_loss = _cal_ring_flash_loss(l * k, q, labels)
+        i2t_loss = cal_inf_loss(q, k, labels, l)
+        t2i_loss = cal_inf_loss(k, q, labels, l)
 
         total_loss = (i2t_loss + t2i_loss) / 2
         total_loss = total_loss.mean()

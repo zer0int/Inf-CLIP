@@ -28,12 +28,12 @@ try:
 except ImportError:
     hvd = None
 
-from inf_cl import create_model_and_transforms, trace_model, get_tokenizer, create_loss
-from inf_cl_train.data import get_data
-from inf_cl_train.params import parse_args
-from inf_cl_train.optims import ScalingViTAdafactor, Lion
-from inf_cl_train.train import cosine_lr, const_lr, const_lr_cooldown, train_one_epoch, evaluate
-from inf_cl_train.utils import (setup_logging, pt_load, check_exists, start_sync_process, remote_sync, is_master, init_distributed_device, broadcast_object)
+from inf_clip import create_model_and_transforms, trace_model, get_tokenizer, create_loss
+from inf_clip.train.data import get_data
+from inf_clip.train.params import parse_args
+from inf_clip.train.optims import ScalingViTAdafactor, Lion
+from inf_clip.train.engine import cosine_lr, const_lr, const_lr_cooldown, train_one_epoch, evaluate
+from inf_clip.train.utils import (setup_logging, pt_load, check_exists, start_sync_process, remote_sync, is_master, init_distributed_device, broadcast_object)
 
 
 LATEST_CHECKPOINT_NAME = "epoch_latest.pt"
