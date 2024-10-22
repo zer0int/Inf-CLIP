@@ -42,6 +42,6 @@ Homepage = "https://github.com/clownrat6/Inf-CLIP/inf_cl"
 Issues = "https://github.com/clownrat6/Inf-CLIP/issues"
 
 [tool.pdm.build]
-excludes = ["./**/.git", "./**/logs/*", "./**/work_dirs"]
+excludes = ["./.git"]
 package-dir = "."
 includes = ["./inf_cl"]

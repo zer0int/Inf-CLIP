@@ -44,23 +44,11 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 
 <div align="center"><img src="https://github.com/user-attachments/assets/11c5cc32-aac2-497d-bbc1-33e065a71be0" width="800" /></div>
 
-
-## ⭐ Features
-
-`inf_cl` is the triton implementation of Inf-CL loss:
-* [x] [Ring-CL (inf_cl/ring.py#L238)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L238)
-* [x] [Inf-CL  (inf_cl/ring.py#L251)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L251)
-
-`inf_clip`/`inf_clip_train` are the CLIP training codebase with Inf-CL loss, which has these features:
-- [x] [Gradient Accumulation (inf_clip_train/train.py#L180)](https://github.com/DAMO-NLP-SG/Inf-CLIP/inf_clip_train/train.py#L180)
-- [x] [Gradient Cache (inf_clip_train/train.py#L292)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip_train/train.py#L292)
-
-
 ## 🛠️ Requirements and Installation
 
 Basic Dependencies:
 * Python >= 3.8
-* Pytorch >= 2.2.0
+* Pytorch >= 2.0.0
 * CUDA Version >= 11.8
 
 Install required packages:
@@ -70,13 +58,36 @@ cd Inf-CLIP
 pip install -r requirements.txt
 ```
 
+Install Inf-CL:
+```bash
+# local installing
+pip install -e .
+# remote installing
+pip install inf_cl
+```
+
+## ⭐ Features
+
+`inf_cl` is the triton implementation of Inf-CL loss:
+* [x] [Ring-CL (inf_cl/ring.py#L238)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L238)
+* [x] [Inf-CL  (inf_cl/ring.py#L251)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip/models/ops/ring.py#L251)
+
+`inf_clip` is the CLIP training codebase with Inf-CL loss and other training features:
+- [x] [Gradient Accumulation (inf_clip/train/train.py#L180)](https://github.com/DAMO-NLP-SG/Inf-CLIP/inf_clip_train/train.py#L180)
+- [x] [Gradient Cache (inf_clip/train/train.py#L292)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/inf_clip_train/train.py#L292)
+
+
 ## 🔑 Usage
 
 A simple example about how to adopt our Inf-CL loss for contrastive learning.
 
 ```python
 import torch
+import torch.nn.functional as F
 import torch.distributed as dist
+import numpy as np
+
+from inf_cl import cal_inf_loss
 
 
 def create_cl_tensors(rank, world_size):
@@ -106,6 +117,8 @@ if __name__ == "__main__":
     rank = dist.get_rank()
     world_size = dist.get_world_size()
 
+    torch.cuda.set_device(rank)
+
     # Exampled by Image-Text Contrastive Learning, q is the global image features, 
     # k is the text features, and l is the logit scale.
     q, k, l = create_cl_tensors(rank, world_size)
@@ -113,13 +126,17 @@ if __name__ == "__main__":
     # labels are diagonal elements by default. 
     # labels = torch.arange(q.shape[0])
     loss = cal_inf_loss(q, k, scale=l.exp())
-```
 
+    print(loss)
+
+```
 
 ## 🚀 Main Results
 
 ### Memory Cost
 <p><img src="assets/memory_cost.jpg" width="800" "/></p>
+
+\* denotes adopting "data offload" strategy. 
 
 ### Max Supported Batch Size
 <p><img src="assets/max_batch_size.jpg" width="800" "/></p>
@@ -129,6 +146,8 @@ if __name__ == "__main__":
 
 ### Batch Size Scaling
 <p><img src="assets/batch_size_scaling.jpg" width="800" "/></p>
+
+Training with larger data scale needs larger batch size.
 
 ## 🗝️ Training & Evaluation
 
