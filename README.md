@@ -54,7 +54,7 @@ Basic Dependencies:
 [Remote] Install Inf-CL:
 ```bash
 # remote installing
-pip install inf_cl
+pip install inf_cl -i https://pypi.org/simple
 ```
 
 [Local] Install Inf-CL:
