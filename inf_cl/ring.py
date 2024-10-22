@@ -11,7 +11,7 @@ import numpy as np
 import triton
 import triton.language as tl
 
-from .flash import _flash_prob_forward, _flash_prob_backward
+from .flash import _flash_prob_forward, _flash_prob_backward, _cal_flash_loss
 
 
 class RingComm:
@@ -280,7 +280,10 @@ def cal_ring_loss(q, k, labels=None, scale=None, head_dim=256):
         scale = 1.0
     else:
         scale = GradientGather.apply(scale)
-    return _cal_ring_loss(scale * q, k, labels, head_dim).mean()
+    if torch.distributed.is_initialized():
+        return _cal_ring_loss(scale * q, k, labels, head_dim).mean()
+    else:
+        return _cal_flash_loss(scale * q, k, labels, head_dim).mean()
 
 
 def cal_inf_loss(q, k, labels=None, scale=None, head_dim=256):
@@ -301,7 +304,10 @@ def cal_inf_loss(q, k, labels=None, scale=None, head_dim=256):
         scale = 1.0
     else:
         scale = GradientGather.apply(scale)
-    return _cal_inf_loss(scale * q, k, labels, head_dim).mean()
+    if torch.distributed.is_initialized():
+        return _cal_inf_loss(scale * q, k, labels, head_dim).mean()
+    else:
+        return _cal_flash_loss(scale * q, k, labels, head_dim).mean()
 
 
 if __name__ == "__main__":

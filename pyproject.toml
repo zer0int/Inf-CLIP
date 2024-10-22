@@ -4,7 +4,7 @@ build-backend = "pdm.backend"
 
 [project]
 name = "inf-cl"
-version = "1.0"
+version = "1.2"
 authors = [
     {name = "Zesen Cheng", email = "cyanlaser@stu.pku.edu.cn"},
     {name = "Hang Zhang"},
@@ -32,7 +32,6 @@ classifiers = [
         'Topic :: Software Development :: Libraries :: Python Modules',
 ]
 dependencies = [
-    'torch>=2.0.0',
     'numpy',
     'triton>=2.2.0',
 ]
