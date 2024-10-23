@@ -2,18 +2,19 @@
     <img src="https://github.com/user-attachments/assets/53a09bd1-c8ac-43c0-80ae-03ba284c94ad" width="150" style="margin-bottom: 0.2;"/>
 <p>
 
-<h3 align="center"><a href="https://arxiv.org/abs/2406.07476">
+<h3 align="center"><a href="https://arxiv.org/abs/2410.17243">
 Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Loss</a></h3>
 <h5 align="center"> If our project helps you, please give us a star ⭐ on GitHub to support us. 🙏🙏 </h2>
 
 <h5 align="center">
 
-[![arXiv](https://img.shields.io/badge/Arxiv-2406.07476-AD1C18.svg?logo=arXiv)](https://arxiv.org/abs/2406.07476)
-[![PyPI](https://img.shields.io/badge/PyPI-Inf--CL-9C276A.svg)](https://pypi.org/project/inf-cl)
-[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/LICENSE) <br>
+[![arXiv](https://img.shields.io/badge/Arxiv-2410.17243-AD1C18.svg?logo=arXiv)](https://arxiv.org/abs/2406.07476)
+[![PyPI](https://img.shields.io/badge/PyPI-Inf--CL-9C276A.svg)](https://pypi.org/project/inf-cl) <br>
+[![License](https://img.shields.io/badge/License-Apache%202.0-yellow)](https://github.com/DAMO-NLP-SG/Inf-CLIP/blob/main/LICENSE)
 [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FDAMO-NLP-SG%2FInf-CLIP&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 [![GitHub issues](https://img.shields.io/github/issues/DAMO-NLP-SG/Inf-CLIP?color=critical&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aopen+is%3Aissue)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/DAMO-NLP-SG/Inf-CLIP?color=success&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aissue+is%3Aclosed)  <br>
+[![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://zhuanlan.zhihu.com/p/1681887214)
 
 </h5>
 
@@ -222,12 +223,12 @@ bash scripts/benchmarks_eval.sh
 
 If you find Inf-CLIP useful for your research and applications, please cite using this BibTeX:
 ```bibtex
-@article{damonlpsg2024infcl,
+@article{damovl2024infcl,
   title={Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Loss},
   author={Zesen Cheng, Hang Zhang, Kehan Li, Sicong Leng, Zhiqiang Hu, Fei Wu, Deli Zhao, Xin Li, Lidong Bing},
-  journal={arXiv preprint arXiv:},
+  journal={arXiv preprint arXiv:2410.17243},
   year={2024},
-  url = {https://arxiv.org/abs/}
+  url={https://arxiv.org/abs/2410.12787}
 }
 ```
 
