@@ -15,6 +15,7 @@ Breaking the Memory Barrier: Near Infinite Batch Size Scaling for Contrastive Lo
 [![GitHub issues](https://img.shields.io/github/issues/DAMO-NLP-SG/Inf-CLIP?color=critical&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aopen+is%3Aissue)
 [![GitHub closed issues](https://img.shields.io/github/issues-closed/DAMO-NLP-SG/Inf-CLIP?color=success&label=Issues)](https://github.com/DAMO-NLP-SG/Inf-CLIP/issues?q=is%3Aissue+is%3Aclosed)  <br>
 [![zhihu](https://img.shields.io/badge/-知乎-000000?logo=zhihu&logoColor=0084FF)](https://zhuanlan.zhihu.com/p/1681887214)
+[![Twitter](https://img.shields.io/badge/-Twitter@lixin4ever-black?logo=twitter&logoColor=1D9BF0)](https://x.com/lixin4ever/status/1849669129613226457) <br>
 
 </h5>
 
