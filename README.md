@@ -1,3 +1,17 @@
+## This fork implements Geometric Parametrization for Inf-CLIP
+- Early work in progress
+- Experimental and untested modification of Inf-CLIP (I don't have access to distributed multi-GPU instances).
+- May or may not produce the excellent results seen with my normal [zer0int/CLIP-fine-tune](https://github.com/zer0int/CLIP-fine-tune).
+----
+To use:
+1. Load an OpenAI CLIP model, convert to Geometric Parametrization (GmP), save - with:
+- `convert-openai-clip-to-gmp.py`
+2. Run CLIP training with args (for example):
+- `--pretrained ViT-L-14-GmP.pt --model ViT-L-14`
+
+-------
+### Original README.md below
+--------
 <p align="center">
     <img src="https://github.com/user-attachments/assets/53a09bd1-c8ac-43c0-80ae-03ba284c94ad" width="150" style="margin-bottom: 0.2;"/>
 <p>
