@@ -19,7 +19,7 @@ from .hf_model import HFTextEncoder
 from .modified_resnet import ModifiedResNet
 from .timm_model import TimmModel
 from .transformer import LayerNormFp32, LayerNorm, QuickGELU, Attention, VisionTransformer, TextTransformer,\
-    text_global_pool
+    text_global_pool, GeometricLinear
 from ..utils import to_2tuple
 
 
@@ -446,6 +446,25 @@ def convert_to_custom_text_state_dict(state_dict: dict):
         return new_state_dict
     return state_dict
 
+# Geometric Parametrization
+def adjust_state_dict(state_dict):
+    new_state_dict = {}
+    
+    for key, value in state_dict.items():
+        # Handle the conversion for GeometricLinear layers
+        if "mlp.c_fc.weight" in key:
+            base_key = key.replace("weight", "")
+            new_state_dict[base_key + "r"] = torch.norm(value, dim=1, keepdim=True)
+            new_state_dict[base_key + "theta"] = F.normalize(value, p=2, dim=1)
+        elif "mlp.c_proj.weight" in key:
+            base_key = key.replace("weight", "")
+            new_state_dict[base_key + "r"] = torch.norm(value, dim=1, keepdim=True)
+            new_state_dict[base_key + "theta"] = F.normalize(value, p=2, dim=1)
+        else:
+            new_state_dict[key] = value
+
+    return new_state_dict
+    
 
 def build_model_from_openai_state_dict(
         state_dict: dict,
@@ -501,6 +520,9 @@ def build_model_from_openai_state_dict(
 
     for key in ["input_resolution", "context_length", "vocab_size"]:
         state_dict.pop(key, None)
+ 
+    state_dict = adjust_state_dict(state_dict) # Geometric Parametrization / GeometricLinear layers
+    #TODO: invoke not just if 'openai' to prevent having to pre-convert model
     convert_weights_to_fp16(model)  # OpenAI state dicts are partially converted to float16
     model.load_state_dict(state_dict)
     return model.eval()

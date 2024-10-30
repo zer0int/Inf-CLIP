@@ -2,7 +2,7 @@ from collections import OrderedDict
 import math
 from typing import Callable, List, Optional, Sequence, Tuple, Union
 from functools import partial
-
+import numpy as np
 import torch
 from torch import nn
 from torch.nn import functional as F
@@ -11,6 +11,43 @@ from torch.utils.checkpoint import checkpoint
 from .pos_embed import get_2d_sincos_pos_embed
 from ..utils import to_2tuple
 
+# Geometric Parametrization for CLIP was inspired by:
+# https://arxiv.org/abs/2305.15912v4
+# To jump to implementation, search for: GeometricLinear 
+class GeometricLinear(nn.Module):
+    def __init__(self, in_features, out_features, bias=True):
+        super(GeometricLinear, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        
+        # MLP linear .weight -> .theta, .r
+        
+        # Radial component
+        self.r = nn.Parameter(torch.Tensor(out_features, 1))
+        # Angular component
+        self.theta = nn.Parameter(torch.Tensor(out_features, in_features))
+
+        if bias:
+            self.bias = nn.Parameter(torch.Tensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        nn.init.kaiming_uniform_(self.theta, a=np.sqrt(5))
+        fan_in = self.in_features
+        bound = 1 / np.sqrt(fan_in)
+        nn.init.uniform_(self.r, -bound, bound)
+        if self.bias is not None:
+            nn.init.uniform_(self.bias, -bound, bound)
+
+    def forward(self, input):
+        u = F.normalize(self.theta, p=2, dim=1)  # Normalize theta to get unit vector u
+        output = F.linear(input, self.r * u)     # Geometric parameterization
+        if self.bias is not None:
+            output += self.bias
+        return output
 
 class LayerNormFp32(nn.LayerNorm):
     """Subclass torch's LayerNorm to handle fp16 (by casting to float32 and back)."""
@@ -44,7 +81,6 @@ class LayerScale(nn.Module):
 
     def forward(self, x):
         return x.mul_(self.gamma) if self.inplace else x * self.gamma
-
 
 class PatchDropout(nn.Module):
     """
@@ -84,7 +120,7 @@ class PatchDropout(nn.Module):
             x = torch.cat((cls_tokens, x), dim=1)
 
         return x
-
+        
 
 class Attention(nn.Module):
     def __init__(
@@ -183,7 +219,6 @@ class Attention(nn.Module):
         x = self.out_drop(x)
         return x
 
-
 class AttentionalPooler(nn.Module):
     def __init__(
             self,
@@ -205,7 +240,6 @@ class AttentionalPooler(nn.Module):
         q = self.ln_q(self.query)
         out = self.attn(q.unsqueeze(0).expand(N, -1, -1), x, x, need_weights=False)[0]
         return out
-
 
 class ResidualAttentionBlock(nn.Module):
     def __init__(
@@ -229,10 +263,11 @@ class ResidualAttentionBlock(nn.Module):
 
         self.ln_2 = norm_layer(d_model)
         mlp_width = int(d_model * mlp_ratio)
+        # MLP With GeometricLinear .r, .theta instead of nn.Linear .weight
         self.mlp = nn.Sequential(OrderedDict([
-            ("c_fc", nn.Linear(d_model, mlp_width)),
+            ("c_fc", GeometricLinear(d_model, mlp_width)),
             ("gelu", act_layer()),
-            ("c_proj", nn.Linear(mlp_width, d_model))
+            ("c_proj", GeometricLinear(mlp_width, d_model))
         ]))
         self.ls_2 = LayerScale(d_model, ls_init_value) if ls_init_value is not None else nn.Identity()
 
@@ -263,7 +298,6 @@ class ResidualAttentionBlock(nn.Module):
         x = q_x + self.ls_1(self.attention(q_x=self.ln_1(q_x), k_x=k_x, v_x=v_x, attn_mask=attn_mask))
         x = x + self.ls_2(self.mlp(self.ln_2(x)))
         return x
-
 
 class CustomResidualAttentionBlock(nn.Module):
     def __init__(
@@ -311,10 +345,8 @@ class CustomResidualAttentionBlock(nn.Module):
         x = x + self.ls_2(self.mlp(self.ln_2(x)))
         return x
 
-
 def _expand_token(token, batch_size: int):
     return token.view(1, 1, -1).expand(batch_size, -1, -1)
-
 
 class Transformer(nn.Module):
     def __init__(
@@ -350,7 +382,7 @@ class Transformer(nn.Module):
     def get_cast_dtype(self) -> torch.dtype:
         if hasattr(self.resblocks[0].mlp.c_fc, 'int8_original_dtype'):
             return self.resblocks[0].mlp.c_fc.int8_original_dtype
-        return self.resblocks[0].mlp.c_fc.weight.dtype
+        return self.resblocks[0].mlp.c_fc.r.dtype # c_fc.r.dtype for GeometricLinear
 
     def forward(self, x: torch.Tensor, attn_mask: Optional[torch.Tensor] = None):
         if not self.batch_first:
@@ -364,7 +396,6 @@ class Transformer(nn.Module):
         if not self.batch_first:
             x = x.transpose(0, 1)    # LND -> NLD
         return x
-
 
 class CustomTransformer(nn.Module):
     """ A custom transformer that can use different block types. """
@@ -429,6 +460,7 @@ class CustomTransformer(nn.Module):
         if not self.batch_first:
             x = x.transpose(0, 1)  # NLD -> LND
         return x
+
 
 
 class VisionTransformer(nn.Module):
@@ -571,25 +603,30 @@ class VisionTransformer(nn.Module):
 
             _unlock(groups[-unlocked_groups:])
 
-    def init_parameters(self):
-        # FIXME OpenAI CLIP did not define an init for the VisualTransformer
-        # TODO experiment if default PyTorch init, below, or alternate init is best.
+    def init_parameters(self):      
+        nn.init.normal_(self.class_embedding, std=0.02)
+        nn.init.normal_(self.positional_embedding, std=0.01)
 
-        # nn.init.normal_(self.class_embedding, std=self.scale)
-        # nn.init.normal_(self.positional_embedding, std=self.scale)
-        #
-        # proj_std = (self.transformer.width ** -0.5) * ((2 * self.transformer.layers) ** -0.5)
-        # attn_std = self.transformer.width ** -0.5
-        # fc_std = (2 * self.transformer.width) ** -0.5
-        # for block in self.transformer.resblocks:
-        #     nn.init.normal_(block.attn.in_proj_weight, std=attn_std)
-        #     nn.init.normal_(block.attn.out_proj.weight, std=proj_std)
-        #     nn.init.normal_(block.mlp.c_fc.weight, std=fc_std)
-        #     nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
-        #
-        # if self.text_projection is not None:
-        #     nn.init.normal_(self.text_projection, std=self.scale)
-        pass
+        proj_std = (self.transformer.width ** -0.5) * ((2 * self.transformer.layers) ** -0.5)
+        attn_std = self.transformer.width ** -0.5
+        fc_std = (2 * self.transformer.width) ** -0.5
+        for block in self.transformer.resblocks:
+            nn.init.normal_(block.attn.in_proj_weight, std=attn_std)
+            nn.init.normal_(block.attn.out_proj.weight, std=proj_std)
+
+            # Handle GeometricLinear layers
+            if isinstance(block.mlp.c_fc, GeometricLinear):
+                nn.init.normal_(block.mlp.c_fc.r, std=fc_std)
+                nn.init.kaiming_uniform_(block.mlp.c_fc.theta, a=np.sqrt(5))
+            else:
+                nn.init.normal_(block.mlp.c_fc.weight, std=fc_std)
+
+            if isinstance(block.mlp.c_proj, GeometricLinear):
+                nn.init.normal_(block.mlp.c_proj.r, std=proj_std)
+                nn.init.kaiming_uniform_(block.mlp.c_proj.theta, a=np.sqrt(5))
+            else:
+                nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
+
 
     @torch.jit.ignore
     def set_grad_checkpointing(self, enable=True):
@@ -740,8 +777,19 @@ class TextTransformer(nn.Module):
         for block in self.transformer.resblocks:
             nn.init.normal_(block.attn.in_proj_weight, std=attn_std)
             nn.init.normal_(block.attn.out_proj.weight, std=proj_std)
-            nn.init.normal_(block.mlp.c_fc.weight, std=fc_std)
-            nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
+
+            # Handle GeometricLinear layers
+            if isinstance(block.mlp.c_fc, GeometricLinear):
+                nn.init.normal_(block.mlp.c_fc.r, std=fc_std)
+                nn.init.kaiming_uniform_(block.mlp.c_fc.theta, a=np.sqrt(5))
+            else:
+                nn.init.normal_(block.mlp.c_fc.weight, std=fc_std)
+
+            if isinstance(block.mlp.c_proj, GeometricLinear):
+                nn.init.normal_(block.mlp.c_proj.r, std=proj_std)
+                nn.init.kaiming_uniform_(block.mlp.c_proj.theta, a=np.sqrt(5))
+            else:
+                nn.init.normal_(block.mlp.c_proj.weight, std=proj_std)
 
         if self.text_projection is not None:
             if isinstance(self.text_projection, nn.Linear):
@@ -807,8 +855,8 @@ class TextTransformer(nn.Module):
             return pooled, tokens
 
         return pooled
-
-
+        
+        
 class MultimodalTransformer(Transformer):
     def __init__(
             self,
